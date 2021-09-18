@@ -7,7 +7,10 @@ function App() {
   const chartRef = useRef(null)
 
   d3.selectAll('svg')
-    .remove()
+    .remove();
+
+  d3.selectAll('#tooltip')
+  .remove()  
 
   const data = [
     {
@@ -43,6 +46,16 @@ function App() {
   const height = 500 - (margin.top + margin.bottom);
 
   useEffect(() => {
+
+
+   drawVoronoiChart()
+
+
+
+  }, [])
+
+
+  function drawVoronoiChart(){
     const viz = d3.select(chartRef.current)
     // the svg is a container 700x500
     // ! by default, as the size can be altered in the stylesheet
@@ -60,7 +73,8 @@ function App() {
       .attr("id", "tooltip")
       .style("opacity", 0)
       .style("visibility", "hidden")
-      .style("position", "absolute");
+      .style("position", "absolute")
+    
 
     // the group is translated inside the 700x500 container
     // ! it does not have a size, as group elements wrap around the nested elements
@@ -236,6 +250,8 @@ function App() {
         // svg coordinates for the path
         // const [mouseX, mouseY] = d3.mouse(this);
         const [mouseX, mouseY] = d3.pointer(event, this)
+        const xy = d3.pointer(event, this)
+        console.log(this)
 
 
         // svg coordinates for the data point
@@ -264,6 +280,7 @@ function App() {
       .on("mouseenter", (d) => {
         // remove existing elements
         tooltip.selectAll("*").remove();
+        console.log(d)
 
         // describe the flower's information through description elements
         tooltip.append("p").append("strong").text(`${d.species}`);
@@ -281,9 +298,7 @@ function App() {
         // show the tooltip
         tooltip.style("opacity", 1).style("visibility", "visible");
       });
-
-
-  }, [])
+  }
 
   return <div className={'viz'} ref={chartRef}></div>
 }
