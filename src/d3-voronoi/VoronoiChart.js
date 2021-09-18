@@ -249,9 +249,11 @@ function App() {
 
         // svg coordinates for the path
         // const [mouseX, mouseY] = d3.mouse(this);
-        const [mouseX, mouseY] = d3.pointer(event, this)
-        const xy = d3.pointer(event, this)
-        console.log(this)
+        // const [mouseX, mouseY] = d3.pointer(event, this);
+        const mouseXY = d3.pointer(event,this)
+        console.log(d)
+        const mouseX=mouseXY[0]
+        const mouseY=mouseXY[1]
 
 
         // svg coordinates for the data point
@@ -275,12 +277,13 @@ function App() {
           "d",
           `M ${mouseX} ${mouseY} L ${x} ${y} m -8 0 a 8 8 0 0 0 16 0 a 8 8 0 0 0 -16 0`
         );
-      })
-      // following the hover event describe the individual data point in the tooltip
-      .on("mouseenter", (d) => {
+
+
+           // following the hover event describe the individual data point in the tooltip
+    
         // remove existing elements
         tooltip.selectAll("*").remove();
-        console.log(d)
+        // console.log(d)
 
         // describe the flower's information through description elements
         tooltip.append("p").append("strong").text(`${d.species}`);
@@ -298,6 +301,8 @@ function App() {
         // show the tooltip
         tooltip.style("opacity", 1).style("visibility", "visible");
       });
+      
+   
   }
 
   return <div className={'viz'} ref={chartRef}></div>
