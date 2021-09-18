@@ -295,20 +295,8 @@ function App() {
     ;
     const allGroup = ["valueA", "valueB"]
 
-    let dataReady = d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/data_connectedscatter.csv").then(function (data) {
 
       // List of groups (here I have one group per column)
-      // const allGroup = ["valueA", "valueB"]
-
-      // // Reformat the data: we need an array of arrays of {x, y} tuples
-      // dataReady = allGroup.map(function (grpName) { // .map allows to do something for each element of the list
-      //   return {
-      //     name: grpName,
-      //     values: data.map(function (d) {
-      //       return { time: d.time, value: +d[grpName] };
-      //     })
-      //   };
-      // });
 
       let dataReady = [{
         name: "valueA",
@@ -379,14 +367,15 @@ function App() {
         .data(dataReady)
         .join('g')
         .append("text")
-        .datum(d => { return { name: d.name, value: d.values[d.values.length - 1] }; }) // keep only the last value of each time series
+        .datum(d => { 
+          console.log(d)
+          return { name: d.name, value: d.values[d.values.length - 1] }; }) // keep only the last value of each time series
+        // .datum(d => { return d.map((data)=> ({name:data.name,value:data.value}) ) }) // keep only the last value of each time series
         .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
         .attr("x", 12) // shift the text a bit more right
         .text(d => d.name)
         .style("fill", d => myColor(d.name))
         .style("font-size", 15)
-
-    })
 
   }
 
