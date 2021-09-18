@@ -10,7 +10,7 @@ function App() {
     .remove();
 
   d3.selectAll('#tooltip')
-  .remove()  
+    .remove()
 
   const data = [
     {
@@ -47,15 +47,12 @@ function App() {
 
   useEffect(() => {
 
-
-   drawVoronoiChart()
-
-
+    drawVoronoiChart()
 
   }, [])
 
 
-  function drawVoronoiChart(){
+  function drawVoronoiChart() {
     const viz = d3.select(chartRef.current)
     // the svg is a container 700x500
     // ! by default, as the size can be altered in the stylesheet
@@ -74,7 +71,10 @@ function App() {
       .style("opacity", 0)
       .style("visibility", "hidden")
       .style("position", "absolute")
-    
+
+
+
+
 
     // the group is translated inside the 700x500 container
     // ! it does not have a size, as group elements wrap around the nested elements
@@ -135,7 +135,7 @@ function App() {
       .append('text')
       .attr('x', -18)
       .attr('y', 18)
-      .text('0cm')
+      .text('0.00')
 
     // add grid lines for the existing ticks
     d3.selectAll('g.x-axis')
@@ -167,16 +167,9 @@ function App() {
       .attr('x', width / 2)
       .attr('y', margin.bottom)
       .attr('text-anchor', 'middle')
-      .text("Petal's Width")
+      .text("VORONOI CHART")
+      .attr("color", "red")
 
-      // d3.select('g.y-axis')
-      .append('text')
-      .attr('class', 'label')
-      .attr('x', -margin.left + 5)
-      .attr('y', height / 2)
-      .attr('text-anchor', 'middle')
-      .style('writing-mode', 'vertical-rl')
-      .text("Petal's Length")
 
     //add a path element to connect the cell to the tooltip
     const link = group
@@ -249,11 +242,9 @@ function App() {
 
         // svg coordinates for the path
         // const [mouseX, mouseY] = d3.mouse(this);
-        // const [mouseX, mouseY] = d3.pointer(event, this);
-        const mouseXY = d3.pointer(event,this)
-        console.log(d)
-        const mouseX=mouseXY[0]
-        const mouseY=mouseXY[1]
+        const mouseXY = d3.pointer(event, this)
+        const mouseX = mouseXY[0]
+        const mouseY = mouseXY[1]
 
 
         // svg coordinates for the data point
@@ -279,8 +270,8 @@ function App() {
         );
 
 
-           // following the hover event describe the individual data point in the tooltip
-    
+        // following the hover event describe the individual data point in the tooltip
+
         // remove existing elements
         tooltip.selectAll("*").remove();
         // console.log(d)
@@ -301,11 +292,111 @@ function App() {
         // show the tooltip
         tooltip.style("opacity", 1).style("visibility", "visible");
       });
-      
-   
+    ;
+    const allGroup = ["valueA", "valueB"]
+
+    let dataReady = d3.csv("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/data_connectedscatter.csv").then(function (data) {
+
+      // List of groups (here I have one group per column)
+      // const allGroup = ["valueA", "valueB"]
+
+      // // Reformat the data: we need an array of arrays of {x, y} tuples
+      // dataReady = allGroup.map(function (grpName) { // .map allows to do something for each element of the list
+      //   return {
+      //     name: grpName,
+      //     values: data.map(function (d) {
+      //       return { time: d.time, value: +d[grpName] };
+      //     })
+      //   };
+      // });
+
+      let dataReady = [{
+        name: "valueA",
+        values: [
+          { time: '3', value: 2 },
+          { time: '4', value: 7 },
+        ]
+      }]
+
+      console.log(dataReady)
+
+
+
+      // A color scale: one color for each group
+      const myColor = d3.scaleOrdinal()
+        .domain(allGroup)
+        .range(d3.schemeSet2);
+
+      // Add X axis --> it is a date format
+      const x = d3.scaleLinear()
+        .domain([0, 10])
+        .range([0, width]);
+      svg.append("g")
+        .attr("transform", `translate(0, ${height})`)
+        .call(d3.axisBottom(x))
+        .style("visibility", "hidden");
+
+      // Add Y axis
+      const y = d3.scaleLinear()
+        .domain([0, 20])
+        .range([height, 0]);
+      svg.append("g")
+        .call(d3.axisLeft(y))
+        .style("visibility", "hidden");
+
+
+      // Add the lines
+      const line = d3.line()
+        .x(d => x(+d.time))
+        .y(d => y(+d.value))
+      svg.selectAll("myLines")
+        .data(dataReady)
+        .join("path")
+        .attr("d", d => line(d.values))
+        .attr("stroke", d => myColor(d.name))
+        .style("stroke-width", 4)
+        .style("fill", "none")
+
+      // Add the points
+      svg
+        // First we need to enter in a group
+        .selectAll("myDots")
+        .data(dataReady)
+        .join('g')
+        .style("fill", d => myColor(d.name))
+        // Second we need to enter in the 'values' part of this group
+        .selectAll("myPoints")
+        .data(d => d.values)
+        .join("circle")
+        .attr("cx", d => x(d.time))
+        .attr("cy", d => y(d.value))
+        .attr("r", 5)
+        .attr("stroke", "white")
+
+      // Add a legend at the end of each line
+      svg
+        .selectAll("myLabels")
+        .data(dataReady)
+        .join('g')
+        .append("text")
+        .datum(d => { return { name: d.name, value: d.values[d.values.length - 1] }; }) // keep only the last value of each time series
+        .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
+        .attr("x", 12) // shift the text a bit more right
+        .text(d => d.name)
+        .style("fill", d => myColor(d.name))
+        .style("font-size", 15)
+
+    })
+
   }
 
-  return <div className={'viz'} ref={chartRef}></div>
+
+
+return (<>
+  <div className={'viz'} ref={chartRef}></div>
+</>
+)
+
 }
 
 export default App
