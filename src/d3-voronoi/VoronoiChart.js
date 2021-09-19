@@ -76,6 +76,7 @@ function App() {
 
 
 
+
     // the group is translated inside the 700x500 container
     // ! it does not have a size, as group elements wrap around the nested elements
     // the visualization can however use the width and height and be centered in the svg container
@@ -241,10 +242,8 @@ function App() {
         const { pageX, pageY } = event;
 
         // svg coordinates for the path
-        // const [mouseX, mouseY] = d3.mouse(this);
-        const mouseXY = d3.pointer(event, this)
-        const mouseX = mouseXY[0]
-        const mouseY = mouseXY[1]
+        const [mouseX, mouseY] = d3.pointer(event, this)
+
 
 
         // svg coordinates for the data point
@@ -262,19 +261,18 @@ function App() {
         const left = dx > 0 ? `${pageX}px` : `${pageX - tooltipWidth}px`;
         const top = dy > 0 ? `${pageY}px` : `${pageY - tooltipHeight}px`;
 
-        tooltip.style("left", left).style("top", top);
+        tooltip.style("left", left).style("top", top).on("mouseover", function (event, d) {
+          event.target.style.backgroundColor = "white";
+        })
 
-        link.attr(
-          "d",
-          `M ${mouseX} ${mouseY} L ${x} ${y} m -8 0 a 8 8 0 0 0 16 0 a 8 8 0 0 0 -16 0`
-        );
+        // tooltip line
+        link.attr("d", `M ${mouseX} ${mouseY} L ${x} ${y} m -8 0 a 8 8 0 0 0 16 0 a 8 8 0 0 0 -16 0`);
 
 
         // following the hover event describe the individual data point in the tooltip
 
         // remove existing elements
         tooltip.selectAll("*").remove();
-        // console.log(d)
 
         // describe the flower's information through description elements
         tooltip.append("p").append("strong").text(`${d.species}`);
@@ -289,103 +287,123 @@ function App() {
 
         describeFlower.append("dd").text(`${d.width}`);
 
+        //put button on tooltip
+        describeFlower
+          .append("button")
+          .text("Details")
+          .style("padding", "0px 5px 0px 5px")
+          .on("click", function (event, d) {
+            console.log(event, d)
+            event.target.setAttribute("pointerEvents", 'stroke ')
+          });
+
         // show the tooltip
         tooltip.style("opacity", 1).style("visibility", "visible");
+
       });
     ;
+
+
+
+    // List of groups (here I have one group per column)
+
+    let dataReady = [{
+      name: "valueA",
+      values: [
+        { time: '3', value: 2 },
+        { time: '4', value: 7 },
+      ]
+    }]
+
     const allGroup = ["valueA", "valueB"]
+    // A color scale: one color for each group
+    const myColor = d3.scaleOrdinal()
+      .domain(allGroup)
+      .range(d3.schemeSet2);
+
+    // Add X axis --> it is a date format
+    const x = d3.scaleLinear()
+      .domain([0, 10])
+      .range([0, width]);
+    svg.append("g")
+      .attr("transform", `translate(0, ${height})`)
+      .call(d3.axisBottom(x))
+      .style("visibility", "hidden");
+
+    // Add Y axis
+    const y = d3.scaleLinear()
+      .domain([0, 20])
+      .range([height, 0]);
+    svg.append("g")
+      .call(d3.axisLeft(y))
+      .style("visibility", "hidden");
 
 
-      // List of groups (here I have one group per column)
+    // Add the lines
+    const line = d3.line()
+      .x(d => x(+d.time))
+      .y(d => y(+d.value))
+    svg.selectAll("myLines")
+      .data(dataReady)
+      .join("path")
+      .attr("d", d => line(d.values))
+      .attr("stroke", d => myColor(d.name))  // lines color
+      .style("stroke-width", 4)
+      .style("fill", "none")
 
-      let dataReady = [{
-        name: "valueA",
-        values: [
-          { time: '3', value: 2 },
-          { time: '4', value: 7 },
-        ]
-      }]
+    // Add the points
+    svg
+      // First we need to enter in a group
+      .selectAll("myDots")
+      .data(dataReady)
+      .join('g')
+      .style("fill", d => myColor(d.name))
+      // Second we need to enter in the 'values' part of this group
+      .selectAll("myPoints")
+      .data(d => d.values)
+      .join("circle")
+      .attr("cx", d => x(d.time))
+      .attr("cy", d => y(d.value))
+      .attr("r", 8)
 
-      console.log(dataReady)
+      .on("mouseover", function (event, d) {
+        console.log(event, d);
+        const point = event.target
+        point.setAttribute("stroke", "red");
 
+      })
+      .attr("stroke", "white")
 
+      .on("mouseout", function (event, d) {
+        console.log(event, d);
+        const point = event.target
+        point.setAttribute("stroke", "white");
 
-      // A color scale: one color for each group
-      const myColor = d3.scaleOrdinal()
-        .domain(allGroup)
-        .range(d3.schemeSet2);
-
-      // Add X axis --> it is a date format
-      const x = d3.scaleLinear()
-        .domain([0, 10])
-        .range([0, width]);
-      svg.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(d3.axisBottom(x))
-        .style("visibility", "hidden");
-
-      // Add Y axis
-      const y = d3.scaleLinear()
-        .domain([0, 20])
-        .range([height, 0]);
-      svg.append("g")
-        .call(d3.axisLeft(y))
-        .style("visibility", "hidden");
+      })
 
 
-      // Add the lines
-      const line = d3.line()
-        .x(d => x(+d.time))
-        .y(d => y(+d.value))
-      svg.selectAll("myLines")
-        .data(dataReady)
-        .join("path")
-        .attr("d", d => line(d.values))
-        .attr("stroke", d => myColor(d.name))
-        .style("stroke-width", 4)
-        .style("fill", "none")
 
-      // Add the points
-      svg
-        // First we need to enter in a group
-        .selectAll("myDots")
-        .data(dataReady)
-        .join('g')
-        .style("fill", d => myColor(d.name))
-        // Second we need to enter in the 'values' part of this group
-        .selectAll("myPoints")
-        .data(d => d.values)
-        .join("circle")
-        .attr("cx", d => x(d.time))
-        .attr("cy", d => y(d.value))
-        .attr("r", 5)
-        .attr("stroke", "white")
 
-      // Add a legend at the end of each line
-      svg
-        .selectAll("myLabels")
-        .data(dataReady)
-        .join('g')
-        .append("text")
-        .datum(d => { 
-          console.log(d)
-          return { name: d.name, value: d.values[d.values.length - 1] }; }) // keep only the last value of each time series
-        // .datum(d => { return d.map((data)=> ({name:data.name,value:data.value}) ) }) // keep only the last value of each time series
-        .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
-        .attr("x", 12) // shift the text a bit more right
-        .text(d => d.name)
-        .style("fill", d => myColor(d.name))
-        .style("font-size", 15)
+    // Add a legend at the end of each line
+    svg
+      .selectAll("myLabels")
+      .data(dataReady)
+      .join('g')
+      .append("text")
+      .datum(d => {
+        return { name: d.name, value: d.values[d.values.length - 1] };
+      }) // keep only the last value of each time series
+      .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
+      .attr("x", 12) // shift the text a bit more right
+      .text(d => d.name)
+      .style("fill", d => myColor(d.name))
+      .style("font-size", 15)
 
   }
 
-
-
-return (<>
-  <div className={'viz'} ref={chartRef}></div>
-</>
-)
-
+  return (
+    <div className={'viz'} ref={chartRef}></div>
+  )
 }
 
 export default App
