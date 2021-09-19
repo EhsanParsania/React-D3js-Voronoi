@@ -6,34 +6,32 @@ import './voronoi.css'
 function App() {
   const chartRef = useRef(null)
 
-  d3.selectAll('svg')
-    .remove();
+  d3.selectAll('svg').remove()
 
-  d3.selectAll('#tooltip')
-    .remove()
+  d3.selectAll('#tooltip').remove()
 
   const data = [
     {
       length: 0.4,
       width: 0.6,
-      species: "virginica"
+      species: 'virginica',
     },
     {
       length: 0.4,
       width: 2,
-      species: "virginica"
+      species: 'virginica',
     },
     {
       length: 0.8,
       width: 1.8,
-      species: "virginica"
+      species: 'virginica',
     },
     {
       length: 0.7,
       width: 0.9,
-      species: "virginica"
-    }
-  ];
+      species: 'virginica',
+    },
+  ]
 
   const margin = {
     top: 40,
@@ -42,15 +40,12 @@ function App() {
     left: 55,
   }
 
-  const width = 750 - (margin.right + margin.left);
-  const height = 500 - (margin.top + margin.bottom);
+  const width = 750 - (margin.right + margin.left)
+  const height = 500 - (margin.top + margin.bottom)
 
   useEffect(() => {
-
     drawVoronoiChart()
-
   }, [])
-
 
   function drawVoronoiChart() {
     const viz = d3.select(chartRef.current)
@@ -60,22 +55,18 @@ function App() {
       .append('svg')
       .attr(
         'viewBox',
-        `0 0 ${width + (margin.right + margin.left)} ${height + (margin.top + margin.bottom)
+        `0 0 ${width + (margin.right + margin.left)} ${
+          height + (margin.top + margin.bottom)
         }`
       )
 
     // add a tooltip
     const tooltip = viz
-      .append("div")
-      .attr("id", "tooltip")
-      .style("opacity", 0)
-      .style("visibility", "hidden")
-      .style("position", "absolute")
-
-
-
-
-
+      .append('div')
+      .attr('id', 'tooltip')
+      .style('opacity', 0)
+      .style('visibility', 'hidden')
+      .style('position', 'absolute')
 
     // the group is translated inside the 700x500 container
     // ! it does not have a size, as group elements wrap around the nested elements
@@ -168,34 +159,15 @@ function App() {
       .attr('x', width / 2)
       .attr('y', margin.bottom)
       .attr('text-anchor', 'middle')
-      .text("VORONOI CHART")
-      .attr("color", "red")
-
+      .text('VORONOI CHART')
+      .attr('color', 'red')
 
     //add a path element to connect the cell to the tooltip
-    const link = group
-      .append('path')
-      .attr('fill', 'none')
-      .attr('stroke', 'currentColor')
-      .attr('stroke-width', 1.5)
-
-    // add one circle for each data point
-    // differentiate the fill of the circles according to the sub-specie of flower
-    const fill = {
-      setosa: 'hsl(360, 40%, 45%)',
-      versicolor: 'hsl(300, 40%, 45%)',
-      virginica: 'hsl(240, 40%, 45%)',
-    }
-
-    group
-      .selectAll('circle')
-      .data(data)
-      .enter()
-      .append('circle')
-      .attr('cx', (d) => xScale(d.width))
-      .attr('cy', (d) => yScale(d.length))
-      .attr('fill', (d) => fill[d.species])
-      .attr('r', 4)
+    // const link = group
+    //   .append('path')
+    //   .attr('fill', 'none')
+    //   .attr('stroke', 'currentColor')
+    //   .attr('stroke-width', 1.5)
 
     // add a voronoi diagram on top of the existing elements
     // following the docs specify the x and y points through functions referencing the values included in the visualization
@@ -228,182 +200,184 @@ function App() {
     // for each data point add a cell
     // ! make the cell fully transparent, since the path is included only for mouseover events
     group
-      .selectAll("path.cell")
+      .selectAll('path.cell')
       .data(data)
       .enter()
-      .append("path")
-      .attr("class", "cell")
-      .attr("opacity", 0)
-      .attr("d", (d, i) => voronoi.renderCell(i))
+      .append('path')
+      .attr('class', 'cell')
+      .attr('opacity', 0)
+      .attr('d', (d, i) => voronoi.renderCell(i))
 
-      // following the mousemove event position the tooltip and adjust the path element linking the cursor to the matching data point
-      .on("mousemove", function (event, d) {
+    // add one circle for each data point
+    // differentiate the fill of the circles according to the sub-specie of flower
+    const fill = {
+      setosa: 'hsl(360, 40%, 45%)',
+      versicolor: 'hsl(300, 40%, 45%)',
+      virginica: 'hsl(240, 40%, 45%)',
+    }
+    group
+      .selectAll('circle')
+      .data(data)
+      .enter()
+      .append('circle')
+      .attr('cx', (d) => xScale(d.width))
+      .attr('cy', (d) => yScale(d.length))
+      .attr('fill', (d) => fill[d.species])
+      .attr('r', 6)
+      .on('click', function (event, d) {
+        alert(d.width)
+        console.log(event, d)
+      })
+      .on('mousemove', function (event, d) {
+        d3.select(this).style('cursor', 'pointer')
+
         // dom coordinates for the tooltip
-        const { pageX, pageY } = event;
+        const { pageX, pageY } = event
 
-        // svg coordinates for the path
-        const [mouseX, mouseY] = d3.pointer(event, this)
+        const { width: tooltipWidth, height: tooltipHeight } = document
+          .querySelector('#tooltip')
+          .getBoundingClientRect()
+        const left = `${pageX - tooltipWidth / 2}px`
+        const top = `${pageY - tooltipHeight - 10}px`
 
-
-
-        // svg coordinates for the data point
-        const x = xScale(d.width);
-        const y = yScale(d.length);
-
-        // ! position the tooltip away from the connecting line
-        const dx = mouseX - x; // dx > 0, the point is to the right, show the tooltip to the left
-        const dy = mouseY - y; // dy > 0, the point is above, show the tooltip below
-
-        const {
-          width: tooltipWidth,
-          height: tooltipHeight
-        } = document.querySelector("#tooltip").getBoundingClientRect();
-        const left = dx > 0 ? `${pageX}px` : `${pageX - tooltipWidth}px`;
-        const top = dy > 0 ? `${pageY}px` : `${pageY - tooltipHeight}px`;
-
-        tooltip.style("left", left).style("top", top).on("mouseover", function (event, d) {
-          event.target.style.backgroundColor = "white";
-        })
+        tooltip
+          .style('left', left)
+          .style('top', top)
+          .on('mouseover', function (event, d) {
+            event.target.style.backgroundColor = 'white'
+          })
 
         // tooltip line
-        link.attr("d", `M ${mouseX} ${mouseY} L ${x} ${y} m -8 0 a 8 8 0 0 0 16 0 a 8 8 0 0 0 -16 0`);
-
+        // link.attr(
+        //   'd',
+        //   `M ${mouseX} ${mouseY} L ${x} ${y} m -8 0 a 8 8 0 0 0 16 0 a 8 8 0 0 0 -16 0`
+        // )
 
         // following the hover event describe the individual data point in the tooltip
 
         // remove existing elements
-        tooltip.selectAll("*").remove();
+        tooltip.selectAll('*').remove()
 
         // describe the flower's information through description elements
-        tooltip.append("p").append("strong").text(`${d.species}`);
+        tooltip.append('p').append('strong').text(`${d.species}`)
 
-        const describeFlower = tooltip.append("dl");
+        const describeFlower = tooltip.append('dl')
 
-        describeFlower.append("dt").text("Length");
+        describeFlower.append('dt').text('Length')
 
-        describeFlower.append("dd").text(`${d.length}`);
+        describeFlower.append('dd').text(`${d.length}`)
 
-        describeFlower.append("dt").text("Width");
+        describeFlower.append('dt').text('Width')
 
-        describeFlower.append("dd").text(`${d.width}`);
+        describeFlower.append('dd').text(`${d.width}`)
 
         //put button on tooltip
         describeFlower
-          .append("button")
-          .text("Details")
-          .style("padding", "0px 5px 0px 5px")
-          .on("click", function (event, d) {
+          .append('button')
+          .text('Details')
+          .style('padding', '0px 5px 0px 5px')
+          .on('click', function (event, d) {
             console.log(event, d)
-            event.target.setAttribute("pointerEvents", 'stroke ')
-          });
+            event.target.setAttribute('pointerEvents', 'stroke ')
+          })
 
         // show the tooltip
-        tooltip.style("opacity", 1).style("visibility", "visible");
-
-      });
-    ;
-
-
+        tooltip.style('opacity', 1).style('visibility', 'visible')
+      })
+      .on('mouseout', function (event, d) {
+        tooltip
+          .style('opacity', 0)
+          .style('visibility', 'hidden')
+          .style('position', 'absolute')
+      })
 
     // List of groups (here I have one group per column)
+    let dataReady = [
+      {
+        name: 'valueA',
+        values: [
+          { time: '3', value: 2 },
+          { time: '4', value: 7 },
+        ],
+      },
+    ]
 
-    let dataReady = [{
-      name: "valueA",
-      values: [
-        { time: '3', value: 2 },
-        { time: '4', value: 7 },
-      ]
-    }]
-
-    const allGroup = ["valueA", "valueB"]
+    const allGroup = ['valueA', 'valueB']
     // A color scale: one color for each group
-    const myColor = d3.scaleOrdinal()
-      .domain(allGroup)
-      .range(d3.schemeSet2);
+    const myColor = d3.scaleOrdinal().domain(allGroup).range(d3.schemeSet2)
 
     // Add X axis --> it is a date format
-    const x = d3.scaleLinear()
-      .domain([0, 10])
-      .range([0, width]);
-    svg.append("g")
-      .attr("transform", `translate(0, ${height})`)
+    const x = d3.scaleLinear().domain([0, 10]).range([0, width])
+    svg
+      .append('g')
+      .attr('transform', `translate(0, ${height})`)
       .call(d3.axisBottom(x))
-      .style("visibility", "hidden");
+      .style('visibility', 'hidden')
 
     // Add Y axis
-    const y = d3.scaleLinear()
-      .domain([0, 20])
-      .range([height, 0]);
-    svg.append("g")
-      .call(d3.axisLeft(y))
-      .style("visibility", "hidden");
-
+    const y = d3.scaleLinear().domain([0, 20]).range([height, 0])
+    svg.append('g').call(d3.axisLeft(y)).style('visibility', 'hidden')
 
     // Add the lines
-    const line = d3.line()
-      .x(d => x(+d.time))
-      .y(d => y(+d.value))
-    svg.selectAll("myLines")
+    const line = d3
+      .line()
+      .x((d) => x(+d.time))
+      .y((d) => y(+d.value))
+    svg
+      .selectAll('myLines')
       .data(dataReady)
-      .join("path")
-      .attr("d", d => line(d.values))
-      .attr("stroke", d => myColor(d.name))  // lines color
-      .style("stroke-width", 4)
-      .style("fill", "none")
+      .join('path')
+      .attr('d', (d) => line(d.values))
+      .attr('stroke', (d) => myColor(d.name)) // lines color
+      .style('stroke-width', 4)
+      .style('fill', 'none')
 
     // Add the points
     svg
       // First we need to enter in a group
-      .selectAll("myDots")
+      .selectAll('myDots')
       .data(dataReady)
       .join('g')
-      .style("fill", d => myColor(d.name))
+      .style('fill', (d) => myColor(d.name))
       // Second we need to enter in the 'values' part of this group
-      .selectAll("myPoints")
-      .data(d => d.values)
-      .join("circle")
-      .attr("cx", d => x(d.time))
-      .attr("cy", d => y(d.value))
-      .attr("r", 8)
-
-      .on("mouseover", function (event, d) {
-        console.log(event, d);
+      .selectAll('myPoints')
+      .data((d) => d.values)
+      .join('circle')
+      .attr('cx', (d) => x(d.time))
+      .attr('cy', (d) => y(d.value))
+      .attr('r', 8)
+      .on('mouseover', function (event, d) {
+        console.log(event, d)
         const point = event.target
-        point.setAttribute("stroke", "red");
-
+        point.setAttribute('stroke', 'red')
       })
-      .attr("stroke", "white")
-
-      .on("mouseout", function (event, d) {
-        console.log(event, d);
+      .attr('stroke', 'white')
+      .on('mouseout', function (event, d) {
+        console.log(event, d)
         const point = event.target
-        point.setAttribute("stroke", "white");
-
+        point.setAttribute('stroke', 'white')
       })
-
-
-
 
     // Add a legend at the end of each line
     svg
-      .selectAll("myLabels")
+      .selectAll('myLabels')
       .data(dataReady)
       .join('g')
-      .append("text")
-      .datum(d => {
-        return { name: d.name, value: d.values[d.values.length - 1] };
+      .append('text')
+      .datum((d) => {
+        return { name: d.name, value: d.values[d.values.length - 1] }
       }) // keep only the last value of each time series
-      .attr("transform", d => `translate(${x(d.value.time)},${y(d.value.value)})`) // Put the text at the position of the last point
-      .attr("x", 12) // shift the text a bit more right
-      .text(d => d.name)
-      .style("fill", d => myColor(d.name))
-      .style("font-size", 15)
-
+      .attr(
+        'transform',
+        (d) => `translate(${x(d.value.time)},${y(d.value.value)})`
+      ) // Put the text at the position of the last point
+      .attr('x', 12) // shift the text a bit more right
+      .text((d) => d.name)
+      .style('fill', (d) => myColor(d.name))
+      .style('font-size', 15)
   }
 
-  return (
-    <div className={'viz'} ref={chartRef}></div>
-  )
+  return <div className={'viz'} ref={chartRef}></div>
 }
 
 export default App
