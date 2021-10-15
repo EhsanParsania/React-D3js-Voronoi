@@ -6,17 +6,15 @@
   margin: 0;
 }
 body {
-  min-height: 100vh;
-  background: hsl(38, 46%, 92%);
-  color: hsl(0, 80%, 72%);
-  color: hsl(20, 3%, 22%);
+  /* min-height: 100vh; */
+
   font-family: "Lato", sans-serif;
 }
 /* center the visualization horizontally */
 .viz {
   width: 90vw;
   height: auto;
-  max-width: 850px;
+  /* max-width: 850px; */
   margin: 1rem auto;
   padding: 0.5rem 1rem;
   background: hsl(0, 0%, 100%);
