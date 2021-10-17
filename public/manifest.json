@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Voronoi Chart",
+  "name": "Voronoi-React-d3",
   "icons": [
     {
       "src": "favicon.ico",
