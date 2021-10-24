@@ -265,7 +265,7 @@ function VoronoiChart(props) {
       .style('text-align', 'center')
       .attr('x', (chartWidth - 180) / 2)
       .attr('y', 265)
-      .html('<p>متن فارسی ( rtl text )</p>');
+      .html('<p>متن پارسی ( rtl text )</p>');
 
     svg
       .append('foreignObject')
@@ -275,7 +275,7 @@ function VoronoiChart(props) {
       .style('text-align', 'center')
       .attr('x', -250)
       .attr('y', -5)
-      .html('<p>متن فارسی ( rtl text )</p>');
+      .html('<p>متن پارسی ( rtl text )</p>');
 
     // add a voronoi diagram on top of the existing elements
     // following the docs specify the x and y points through functions referencing the values included in the visualization
