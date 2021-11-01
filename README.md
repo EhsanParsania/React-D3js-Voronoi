@@ -5,7 +5,7 @@ $ yarn start
 
 # Document 
 
-It's a voronoi chart that use d3.js and implement as a react component 
+It's a voronoi chart that use d3.js and implemented as a react component 
 
 New features : 
 -  Implement data scatter and cluster change chart on one base chart
