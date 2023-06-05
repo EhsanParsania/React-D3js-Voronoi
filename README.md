@@ -1,3 +1,6 @@
+# Preview Voronoi chart
+<img src="https://parsefiles.back4app.com/CFmmXcOhm1GdgoqQQOWOA9AofNxCuPlm60TlDvr7/8754d1dd13ecb6f7f25d589c3d0d47cc_Voronoi.png" alt="12" border="0"/>
+
 # To start project
 $ yarn install
 
